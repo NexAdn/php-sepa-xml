@@ -22,6 +22,7 @@
 
 namespace Digitick\Sepa\TransferInformation;
 
+use Digitick\Sepa\Currency\Currency;
 use Digitick\Sepa\DomBuilder\DomBuilderInterface;
 use Digitick\Sepa\Exception\InvalidArgumentException;
 use Digitick\Sepa\Util\StringHelper;
@@ -150,13 +151,17 @@ class BaseTransferInformation implements TransferInformationInterface
     /**
      * @param int $amount amount in cents
      */
-    public function __construct(int $amount, string $iban, string $name, ?string $identification = null)
+    public function __construct(Currency|int $amount, string $iban, string $name, ?string $identification = null)
     {
         if (null === $identification) {
             $identification = $name;
         }
 
-        $this->transferAmount = $amount;
+        if (gettype($amount) == "integer") {
+            $this->transferAmount = $amount;
+        } else {
+            $this->transferAmount = $amount->toCents();
+        }
         $this->iban = $iban;
         $this->name = StringHelper::sanitizeString($name);
         $this->EndToEndIdentification = StringHelper::sanitizeString($identification);
